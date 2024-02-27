@@ -54,6 +54,14 @@ public class Day3 {
 					}
 				}
 			}
+			if (num.Length > 0)
+			{
+				NumPos n = new NumPos();
+				n.Value = int.Parse(num);
+				n.Position = (s.Length-num.Length, posY);
+				nums.Add(n);
+				num = "";
+			}
 			posY++;
 		}
 		foreach (NumPos num in nums)
@@ -182,7 +190,7 @@ class Program
 	static void Main()
 	{
 		//Day3.PartOneTest();
-		Day3.PartOne();
+		Day3.PartOne(); // 540324 is wrong
 		//Day3.PartTwoTest();
 		//Day3.PartTwo();
 	}
