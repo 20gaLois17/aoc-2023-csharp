@@ -33,7 +33,6 @@ public class Day3 {
 			string num = "";
 			for (int i = 0; i < s.Length; i++)
 			{
-				// TODO: parse all numbers and safe their positions and lengths
 				if (Char.IsDigit(s[i]))
 				{
 					num += s[i];
@@ -42,9 +41,7 @@ public class Day3 {
 				{
 					if (num.Length > 0)
 					{
-						NumPos n = new NumPos();
-						n.Value = int.Parse(num);
-						n.Position = (i-num.Length, posY);
+						NumPos n = new NumPos(int.Parse(num), (i-num.Length, posY));
 						nums.Add(n);
 						num = "";
 					}
@@ -56,9 +53,7 @@ public class Day3 {
 			}
 			if (num.Length > 0)
 			{
-				NumPos n = new NumPos();
-				n.Value = int.Parse(num);
-				n.Position = (s.Length-num.Length, posY);
+				NumPos n = new NumPos(int.Parse(num), (s.Length-num.Length, posY));
 				nums.Add(n);
 				num = "";
 			}
@@ -70,10 +65,76 @@ public class Day3 {
 			{
 				if (symbolPositions.Contains(position))
 				{
-					Console.WriteLine($"{num.Value} is valid");
+					// Console.WriteLine($"{num.Value} is valid");
 					result += num.Value;
 					break;
 				}
+			}
+		}
+		return result;
+	}
+
+	public static int PartTwoSolution(StreamReader  sr)
+	{
+		const char GEAR = '*';
+
+		int result = 0;
+		string s;
+
+		// safe the positions of all gears
+		HashSet<(int, int)> symbolPositions = new HashSet<(int, int)>();
+		Dictionary<(int, int), List<NumPos>> gearNums = new Dictionary<(int, int), List<NumPos>>();
+
+		int posY = 0;
+		List<NumPos> nums = new List<NumPos>();
+		while ((s = sr.ReadLine()) != null)
+		{
+			string num = "";
+			for (int i = 0; i < s.Length; i++)
+			{
+				if (Char.IsDigit(s[i]))
+				{
+					num += s[i];
+				}
+				else
+				{
+					if (num.Length > 0)
+					{
+						NumPos n = new NumPos(int.Parse(num), (i-num.Length, posY));
+						nums.Add(n);
+						num = "";
+					}
+					if (s[i] == GEAR)
+					{
+						gearNums.Add((i, posY), new List<NumPos>());
+						symbolPositions.Add((i, posY));
+					}
+				}
+			}
+			if (num.Length > 0)
+			{
+				NumPos n = new NumPos(int.Parse(num), (s.Length-num.Length, posY));
+				nums.Add(n);
+				num = "";
+			}
+			posY++;
+		}
+		foreach (NumPos num in nums)
+		{
+			foreach ((int, int) position in num.GetCorridor(posY, posY))
+			{
+				if (symbolPositions.Contains(position))
+				{
+					gearNums[position].Add(num);
+					break;
+				}
+			}
+		}
+		foreach (var gearNum in gearNums)
+		{
+			if (gearNum.Value.Count == 2)
+			{
+				result += gearNum.Value[0].Value * gearNum.Value[1].Value;
 			}
 		}
 		return result;
@@ -84,8 +145,10 @@ public class Day3 {
 		public int Value { get; set; }
 		public (int, int) Position { get; set; }
 
-		public NumPos()
+		public NumPos(int value, (int, int) position)
 		{
+			this.Value = value;
+			this.Position = position;
 		}
 
 		public List<(int, int)> GetCorridor(int width, int height)
@@ -155,11 +218,6 @@ public class Day3 {
 		}
 	}
 
-	public static int PartTwoSolution(StreamReader sr)
-	{
-		return 1;
-	}
-
 	public static void PartOneTest()
 	{
 		StreamReader sr = GetInput("test-input.txt");
@@ -189,9 +247,9 @@ class Program
 {
 	static void Main()
 	{
-		//Day3.PartOneTest();
-		Day3.PartOne(); // 540324 is wrong
-		//Day3.PartTwoTest();
-		//Day3.PartTwo();
+		// Day3.PartOneTest();
+		// Day3.PartOne();
+		Day3.PartTwoTest();
+		Day3.PartTwo();
 	}
 }
