@@ -7,8 +7,47 @@ using System.Linq;
 public class Day4 {
     public static int PartOneSolution(StreamReader sr)
     {
-        string s;
         int sum = 0;
+        List<int> card_scores = GetCardScores(sr);
+        foreach (var card_score in card_scores)
+        {
+            if (card_score > 0)
+            {
+                sum += (int)Math.Pow(2, card_score - 1);
+            }
+        }
+        return sum;
+    }
+
+    public static int PartTwoSolution(StreamReader sr)
+    {
+        int sum = 0;
+        List<int> card_scores = GetCardScores(sr);
+        int[] card_deck = new int[card_scores.Count];
+
+        for (int i = 0; i < card_deck.Length; i++)
+        {
+            card_deck[i] = 1;
+        }
+        for (int i = 0; i < card_deck.Length; i++)
+        {
+            for (int j = i+1; j < card_deck.Length && j-(i+1) < card_scores[i]; j++)
+            {
+                card_deck[j] += card_deck[i];
+            }
+        }
+        foreach (var count in card_deck)
+        {
+            sum += count;
+        }
+
+        return sum;
+    }
+
+    static List<int> GetCardScores(StreamReader sr)
+    {
+        string s;
+        List<int> card_scores = new List<int>();
         while ((s = sr.ReadLine()) != null)
         {
             string pattern = "Card \\d+:";
@@ -27,18 +66,9 @@ public class Day4 {
                     hits++;
                 }
             }
-            Console.WriteLine($"Hits: {hits}");
-            if (hits == 0)
-            {
-                continue;
-            }
-            sum += (int)Math.Pow(2, hits-1);
+            card_scores.Add(hits);
         }
-        return sum;
-    }
-    public static int PartTwoSolution(StreamReader sr)
-    {
-        return 0;
+        return card_scores;
     }
 
     static StreamReader GetInput(string path)
@@ -86,7 +116,7 @@ class Program
     {
         Day4.PartOneTest();
         Day4.PartOne();
-        // Day4.PartTwoTest();
-        // Day4.PartTwo();
+        Day4.PartTwoTest();
+        Day4.PartTwo();
     }
 }
