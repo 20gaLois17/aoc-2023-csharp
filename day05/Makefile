@@ -1,0 +1,27 @@
+# Makefile
+
+# Compiler
+CSC = mcs
+
+# Compiler flags
+CFLAGS = -langversion:latest
+
+# Source files
+SOURCES = Day5.cs StateMachine.cs
+
+# Executable name
+EXECUTABLE = day5.exe
+
+all: run
+
+$(EXECUTABLE): $(SOURCES)
+	$(CSC) $(CFLAGS) -out:$(EXECUTABLE) $(SOURCES)
+
+run: $(EXECUTABLE)
+	 ./$(EXECUTABLE)
+
+.PHONY: clean
+
+clean:
+	rm -f $(EXECUTABLE)
+
