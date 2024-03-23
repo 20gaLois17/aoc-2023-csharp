@@ -53,10 +53,46 @@ public class Day6 {
         return count.Aggregate(1, (acc, x) => acc * x);
     }
 
-    public static int PartTwoSolution(StreamReader sr)
+    public static long PartTwoSolution(StreamReader sr)
     {
-        int sum = 0;
-        return sum;
+        List<string> times = new List<string>();
+        List<string> distances = new List<string>();
+        string s;
+        while ((s = sr.ReadLine()) != null)
+        {
+            if (s.Contains("Time: "))
+            {
+                IEnumerable<string> _times = Regex.Replace(s, "Time: ", "")
+                    .Trim()
+                    .Split(" ")
+                    .Where(t => t != "");
+                foreach (string time in _times)
+                {
+                    times.Add(time);
+                }
+
+            } else {
+                IEnumerable<string> _distances = Regex.Replace(s, "Distance: ", "")
+                    .Trim()
+                    .Split(" ")
+                    .Where(d => d != "");
+                foreach (string distance in _distances)
+                {
+                    distances.Add(distance);
+                }
+            }
+        }
+        long _time = long.Parse(times.Aggregate("", (acc, x) => acc + x));
+        long _distance = long.Parse(distances.Aggregate("", (acc, x) => acc + x));
+        long count = 0;
+        for (int i = 1; i < _time; i++)
+        {
+            if (i * (_time-i) > _distance)
+            {
+                count++;
+            }
+        }
+        return count;
     }
 
     static StreamReader GetInput(string path)
@@ -104,7 +140,7 @@ class Program
     {
         Day6.PartOneTest();
         Day6.PartOne();
-        // Day6.PartTwoTest();
-        // Day6.PartTwo();
+        Day6.PartTwoTest();
+        Day6.PartTwo();
     }
 }
