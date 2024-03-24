@@ -31,8 +31,45 @@ public class Day8
         return count;
     }
 
-    public static int PartTwoSolution(StreamReader sr)
+    public static long PartTwoSolution(StreamReader sr)
     {
+        string s;
+        string sequence = sr.ReadLine();
+        sr.ReadLine();
+        Dictionary<string, Tuple<string, string>> rules = new Dictionary<string, Tuple<string, string>>();
+        while ((s = sr.ReadLine()) != null)
+        {
+            string start = s.Substring(0, 3);
+            string left = s.Substring(7, 3);
+            string right = s.Substring(12, 3);
+            rules.Add(start, new Tuple<string, string>(left, right));
+        }
+
+        List<string> keys = new List<string>();
+        foreach (string key in rules.Keys)
+        {
+            if (key[2] == 'A')
+            {
+                keys.Add(key);
+            }
+        }
+        // too much brute force
+        foreach (string key in keys)
+        {
+            int count = 0;
+            int idx = 0;
+            string current = key;
+            while (current[2] != 'Z')
+            {
+                int target = idx % (sequence.Length);
+                current = sequence[target] == 'L' ? rules[current].Item1 : rules[current].Item2;
+                count++;
+                idx++;
+            }
+            // calculate least common multiple of all counts
+            Console.WriteLine($"{current} => {count}");
+        }
+        Console.WriteLine("Calculate LCM (Least Common Multiple) of those values");
         return 0;
     }
 
@@ -81,7 +118,7 @@ class Program
     {
         Day8.PartOneTest();
         Day8.PartOne();
-        // Day8.PartTwoTest();
-        // Day8.PartTwo();
+        Day8.PartTwoTest();
+        Day8.PartTwo();
     }
 }
