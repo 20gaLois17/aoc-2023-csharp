@@ -3,7 +3,8 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 
-public class Day7 {
+public class Day7
+{
     public static int PartOneSolution(StreamReader sr)
     {
         int result = 0;
@@ -29,7 +30,22 @@ public class Day7 {
 
     public static int PartTwoSolution(StreamReader sr)
     {
-        return 0;
+        int result = 0;
+        string s;
+        List<Hand> hands = new List<Hand>();
+        while ((s = sr.ReadLine()) != null)
+        {
+            string[] split = s.Split(' ');
+            hands.Add(new Hand(split[0], Int32.Parse(split[1])));
+        }
+        hands.Sort(new Hand.HandJokerComparer());
+        int rank = 1;
+        foreach (Hand hand in hands)
+        {
+            result += rank * hand.bid;
+            rank++;
+        }
+        return result;
     }
 
     // ordered by value from lowest to highest
@@ -42,9 +58,9 @@ public class Day7 {
         HIGH_CARD, ONE_PAIR, TWO_PAIR, THREE_OF_A_KIND, FULL_HOUSE, FOUR_OF_A_KIND, FIVE_OF_A_KIND
     }
 
-    public static Card FromChar(char s)
+    public static Card CardFromChar(char c)
     {
-        switch (s)
+        switch (c)
         {
             case '2': return Card.TWO;
             case '3': return Card.THREE;
@@ -63,7 +79,7 @@ public class Day7 {
         }
     }
 
-    public class Hand: IComparable
+    public class Hand : IComparable
     {
         public Card[] hand = new Card[5];
         public int bid = 0;
@@ -72,12 +88,12 @@ public class Day7 {
         {
             for (int i = 0; i < hand.Length; i++)
             {
-                this.hand[i] = FromChar(hand[i]);
+                this.hand[i] = CardFromChar(hand[i]);
             }
             this.bid = bid;
         }
 
-        public HandType GetHandType()
+        public HandType GetHandType(bool withJokers = false)
         {
             Dictionary<Card, int> cards = new Dictionary<Card, int>();
             for (int i = 0; i < 5; i++)
@@ -91,6 +107,25 @@ public class Day7 {
                     cards[hand[i]] = 1;
                 }
             }
+            if (withJokers && cards.ContainsKey(Card.JACK))
+            {
+                if (cards[Card.JACK] == 5)
+                {
+                    return HandType.FIVE_OF_A_KIND;
+                }
+                Card mostCommon = Card.TWO;
+                int count = -1;
+                foreach (KeyValuePair<Card, int> pair in cards)
+                {
+                    if (pair.Value > count && pair.Key != Card.JACK)
+                    {
+                        mostCommon = pair.Key;
+                        count = pair.Value;
+                    }
+                }
+                cards[mostCommon] += cards[Card.JACK];
+                cards.Remove(Card.JACK);
+            }
             switch (cards.Count)
             {
                 case 1:
@@ -101,24 +136,21 @@ public class Day7 {
                     {
                         return HandType.FOUR_OF_A_KIND;
                     }
-                    else
-                    {
-                        return HandType.FULL_HOUSE;
-                    }
+                    return HandType.FULL_HOUSE;
+
                 case 3:
                     if (cards.ContainsValue(3))
                     {
                         return HandType.THREE_OF_A_KIND;
                     }
-                    else
-                    {
-                        return HandType.TWO_PAIR;
-                    }
+                    return HandType.TWO_PAIR;
+
                 case 4:
                     return HandType.ONE_PAIR;
 
                 case 5:
                     return HandType.HIGH_CARD;
+
                 default:
                     throw new Exception("Invalid Hand");
             }
@@ -140,6 +172,33 @@ public class Day7 {
                 }
             }
             return 0;
+        }
+
+        public class HandJokerComparer : IComparer<Hand>
+        {
+            public int Compare(Hand x, Hand y)
+            {
+                if (x.GetHandType(true) != y.GetHandType(true))
+                {
+                    return (int)x.GetHandType(true) - (int)y.GetHandType(true);
+                }
+                for (int i = 0; i < 5; i++)
+                {
+                    if (x.hand[i] != y.hand[i] && x.hand[i] != Card.JACK && y.hand[i] != Card.JACK)
+                    {
+                        return (int)x.hand[i] - (int)y.hand[i];
+                    }
+                    if (x.hand[i] == Card.JACK && y.hand[i] != Card.JACK)
+                    {
+                        return -1;
+                    }
+                    if (y.hand[i] == Card.JACK && x.hand[i] != Card.JACK)
+                    {
+                        return 1;
+                    }
+                }
+                return 0;
+            }
         }
     }
 
@@ -188,7 +247,7 @@ class Program
     {
         Day7.PartOneTest();
         Day7.PartOne();
-        // Day7.PartTwoTest();
-        // Day7.PartTwo();
+        Day7.PartTwoTest();
+        Day7.PartTwo();
     }
 }
