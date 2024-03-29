@@ -27,7 +27,7 @@ public class Day9
         return sum;
     }
 
-    private static int GetScore(int[] history)
+    private static int GetScore(int[] history, bool isPartTwo = false)
     {
         if (IsAllZero(history))
         {
@@ -35,14 +35,32 @@ public class Day9
         }
         else
         {
-            return history[history.Length - 1]
-                + GetScore(GetDifferences(history));
+            return isPartTwo
+                ? history[0] - GetScore(GetDifferences(history), isPartTwo)
+                : history[history.Length - 1] + GetScore(GetDifferences(history));
         }
     }
 
     public static long PartTwoSolution(StreamReader sr)
     {
-        return 0;
+        string s;
+        List<int[]> histories = new List<int[]>();
+        while ((s = sr.ReadLine()) != null)
+        {
+            string[] split = s.Split(' ');
+            int[] history = new int[split.Length];
+            for (int i = 0; i < split.Length; i++)
+            {
+                history[i] = int.Parse(split[i]);
+            }
+            histories.Add(history);
+        }
+        int sum = 0;
+        foreach (int[] history in histories)
+        {
+            sum += GetScore(history, true);
+        }
+        return sum;
     }
 
     private static int[] GetDifferences(int[] history)
@@ -67,7 +85,6 @@ public class Day9
         }
         return true;
     }
-
 
     public static void PartOneTest()
     {
@@ -114,7 +131,7 @@ class Program
     {
         Day9.PartOneTest();
         Day9.PartOne();
-        // Day9.PartTwoTest();
-        // Day9.PartTwo();
+        Day9.PartTwoTest();
+        Day9.PartTwo();
     }
 }
