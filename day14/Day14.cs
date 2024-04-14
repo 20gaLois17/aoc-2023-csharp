@@ -26,15 +26,83 @@ public class Day14
         return g.GetTotalLoad();
     }
 
+    public static long PartTwoSolution(StreamReader sr)
+    {
+        string s;
+        int row = 0;
+        Dictionary<(int, int), CellState> grid = new Dictionary<(int, int), CellState>();
+        while ((s = sr.ReadLine()) != null)
+        {
+            for (int column = 0; column < s.Length; column++)
+            {
+                grid.Add((row, column), FromChar(s[column]));
+            }
+            row++;
+        }
+        Grid g = new Grid(grid, row, grid.Count / (row));
+
+        string firstRecurring = "";
+        HashSet<string> seen = new HashSet<string>();
+        while (true)
+        {
+            g.Cycle();
+            if (seen.Contains(g.ToString()))
+            {
+                firstRecurring = g.ToString();
+                break;
+            }
+            else
+            {
+                seen.Add(g.ToString());
+            }
+        }
+        g.Reset();
+        int count = 0;
+        int first = -1;
+        int second = -1;
+        while (first < 0 || second < 0)
+        {
+            count++;
+            g.Cycle();
+            if (g.ToString() == firstRecurring)
+            {
+                if (first == -1)
+                {
+                    first = count;
+                }
+                else
+                {
+                    second = count;
+                    break;
+                }
+
+            }
+        }
+        Console.WriteLine($"First: {first}, Second: {second} cycle length: {second - first + 1}");
+        int cycleLength = second - first;
+        int targetIteration = (1000000000 - first) % cycleLength;
+
+        g.Reset();
+        for (int i = 0; i < first + targetIteration; i++)
+        {
+            Console.WriteLine($"{i} {g.GetTotalLoad()}");
+            g.Cycle();
+        }
+        return g.GetTotalLoad();
+    }
+
     private class Grid
     {
-        public Dictionary<(int, int), CellState> grid { get; }
+        public Dictionary<(int, int), CellState> grid { get; set; }
+        private Dictionary<(int, int), CellState> _grid;
         private int _columns;
         private int _rows;
+        private Tilt _tilt;
 
         public Grid(Dictionary<(int, int), CellState> grid, int rows, int columns)
         {
             this.grid = grid;
+            this._grid = new Dictionary<(int, int), CellState>(grid);
             this._rows = rows;
             this._columns = columns;
         }
@@ -47,6 +115,12 @@ public class Day14
         public int GetHeight()
         {
             return this._rows;
+        }
+
+        public void Reset()
+        {
+            grid = _grid;
+            _grid = new Dictionary<(int, int), CellState>(_grid);
         }
 
         public int GetTotalLoad()
@@ -78,8 +152,31 @@ public class Day14
             }
         }
 
+        public string ToString()
+        {
+            string s = "";
+            for (int i = 0; i < GetHeight(); i++)
+            {
+                for (int k = 0; k < GetWidth(); k++)
+                {
+                    s += ToChar(grid[(i, k)]);
+                }
+            }
+            s += _tilt;
+            return s;
+        }
+
+        public void Cycle()
+        {
+            foreach (Day14.Tilt tilt in Enum.GetValues(typeof(Day14.Tilt)))
+            {
+                Tilt(tilt);
+            }
+        }
+
         public void Tilt(Tilt tilt)
         {
+            _tilt = tilt;
             if (tilt == Day14.Tilt.UP)
             {
                 bool stable = true;
@@ -94,12 +191,94 @@ public class Day14
                             {
                                 continue;
                             }
-                            if (grid[(i - 1, k)] == CellState.FLOOR)
+                            if (grid[(i - 1, k)] != CellState.FLOOR)
                             {
-                                grid[(i - 1, k)] = CellState.MOVABLE_ROCK;
-                                grid[(i, k)] = CellState.FLOOR;
-                                stable = false;
+                                continue;
                             }
+                            grid[(i - 1, k)] = CellState.MOVABLE_ROCK;
+                            grid[(i, k)] = CellState.FLOOR;
+                            stable = false;
+                        }
+                    }
+                }
+                while (!stable);
+            }
+
+            if (tilt == Day14.Tilt.RIGHT)
+            {
+                bool stable = true;
+                do
+                {
+                    stable = true;
+                    for (int k = GetWidth() - 1; k >= 0; k--)
+                    {
+                        for (int i = 0; i < GetHeight(); i++)
+                        {
+                            if (grid[(i, k)] != CellState.MOVABLE_ROCK || k == GetWidth() - 1)
+                            {
+                                continue;
+                            }
+                            if (grid[(i, k + 1)] != CellState.FLOOR)
+                            {
+                                continue;
+                            }
+                            grid[(i, k + 1)] = CellState.MOVABLE_ROCK;
+                            grid[(i, k)] = CellState.FLOOR;
+                            stable = false;
+                        }
+                    }
+                }
+                while (!stable);
+            }
+
+            if (tilt == Day14.Tilt.DOWN)
+            {
+                bool stable = true;
+                do
+                {
+                    stable = true;
+                    for (int i = GetHeight() - 1; i >= 0; i--)
+                    {
+                        for (int k = 0; k < GetWidth(); k++)
+                        {
+                            if (grid[(i, k)] != CellState.MOVABLE_ROCK || i == GetHeight() - 1)
+                            {
+                                continue;
+                            }
+                            if (grid[(i + 1, k)] != CellState.FLOOR)
+                            {
+                                continue;
+                            }
+                            grid[(i + 1, k)] = CellState.MOVABLE_ROCK;
+                            grid[(i, k)] = CellState.FLOOR;
+                            stable = false;
+                        }
+                    }
+                }
+                while (!stable);
+            }
+
+            if (tilt == Day14.Tilt.LEFT)
+            {
+                bool stable = true;
+                do
+                {
+                    stable = true;
+                    for (int k = 0; k < GetWidth(); k++)
+                    {
+                        for (int i = 0; i < GetHeight(); i++)
+                        {
+                            if (grid[(i, k)] != CellState.MOVABLE_ROCK || k == 0)
+                            {
+                                continue;
+                            }
+                            if (grid[(i, k - 1)] != CellState.FLOOR)
+                            {
+                                continue;
+                            }
+                            grid[(i, k - 1)] = CellState.MOVABLE_ROCK;
+                            grid[(i, k)] = CellState.FLOOR;
+                            stable = false;
                         }
                     }
                 }
@@ -110,17 +289,12 @@ public class Day14
 
     enum CellState
     {
-        FLOOR,
-        MOVABLE_ROCK,
-        STATIC_ROCK,
+        FLOOR, MOVABLE_ROCK, STATIC_ROCK,
     }
 
     enum Tilt
     {
-        UP,
-        DOWN,
-        LEFT,
-        RIGHT,
+        UP, LEFT, DOWN, RIGHT,
     }
 
     private static CellState FromChar(char c)
@@ -156,11 +330,6 @@ public class Day14
             default:
                 throw new Exception($"not a valid CellState {s}");
         }
-    }
-
-    public static long PartTwoSolution(StreamReader sr)
-    {
-        return 0;
     }
 
     public static void PartOneTest()
@@ -206,9 +375,9 @@ class Program
 {
     static void Main()
     {
-        Day14.PartOneTest();
-        Day14.PartOne();
+        // Day14.PartOneTest();
+        // Day14.PartOne();
         // Day14.PartTwoTest();
-        // Day14.PartTwo();
+        Day14.PartTwo();
     }
 }
