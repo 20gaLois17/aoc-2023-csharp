@@ -58,15 +58,69 @@ public class Day5 {
             }
         }
         unmapped.Sort();
-        // return mapped[0];
         return unmapped[0];
     }
-    // are we going to write a simple state machine?
 
     public static long PartTwoSolution(StreamReader sr)
     {
-        int sum = 0;
-        return sum;
+        string s;
+        StateMachine m = new StateMachine();
+        List<long> unmapped = new List<long>();
+        List<long> mapped = new List<long>();
+
+        while ((s = sr.ReadLine()) != null)
+        {
+            m.setStateFromLine(s);
+            switch (m.GetState())
+            {
+                case StateMachine.State.Init:
+                    string[] seeds = Regex.Replace(s, "seeds: ", "").Split(" ");
+                    for (int i = 0; i+1 < seeds.Length; i += 2)
+                    {
+                        int count = int.Parse(seeds[i+1]);
+                        while (count > 0)
+                        {
+                            unmapped.Add(long.Parse(seeds[i]) + count);
+                            count--;
+                        }
+                    }
+                    break;
+
+                case StateMachine.State.Idle:
+                    break;
+
+                case StateMachine.State.Map:
+                    string[] values = s.Split(" ");
+                    long destination = long.Parse(values[0]);
+                    long source = long.Parse(values[1]);
+                    long range = long.Parse(values[2]);
+                    long[] candidates = unmapped.ToArray();
+                    unmapped.Clear();
+                    foreach (long candidate in candidates)
+                    {
+                        if (candidate >= source && candidate <= source+range)
+                        {
+                            mapped.Add(destination + candidate - source);
+                        } else
+                        {
+                            unmapped.Add(candidate);
+                        }
+                    }
+
+                    break;
+
+                case StateMachine.State.Collect:
+                    foreach (long item in unmapped)
+                    {
+                        mapped.Add(item);
+                    }
+                    unmapped = new List<long>(mapped.ToArray());
+                    mapped.Clear();
+                    break;
+            }
+        }
+        unmapped.Sort();
+        return unmapped[0];
     }
 
     static StreamReader GetInput(string path)
@@ -115,7 +169,7 @@ class Program
     {
         Day5.PartOneTest();
         Day5.PartOne();
-        // Day5.PartTwoTest();
+        Day5.PartTwoTest();
         // Day5.PartTwo();
     }
 }

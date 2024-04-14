@@ -68,7 +68,7 @@ public class Day13
                         break;
                     }
                 }
-                if (lines[lower] != lines[upper])
+                if (CountSmudges(lines[lower], lines[upper]) > 0)
                 {
                     Console.WriteLine($"{lower}: {lines[lower]} != {upper}: {lines[upper]}");
                     isMatch = false;
@@ -92,9 +92,105 @@ public class Day13
         return 0;
     }
 
+    // there are only two values, so a bitmap would have been much better
     public static long PartTwoSolution(StreamReader sr)
     {
+        string s;
+        List<string> rows = new List<string>();
+        List<string> columns = new List<string>();
+        List<int> results = new List<int>();
+        while ((s = sr.ReadLine()) != null)
+        {
+            if (s.Length > 0)
+            {
+                rows.Add(s);
+            }
+            else
+            {
+                for (int i = 0; i < rows[0].Length; i++)
+                {
+                    string column = "";
+                    foreach (string line in rows)
+                    {
+                        column += line[i];
+                    }
+                    columns.Add(column);
+                }
+
+                results.Add(
+                        Math.Max(
+                            100 * HasMatch2(rows.ToArray()),
+                            HasMatch2(columns.ToArray())
+                            )
+                        );
+
+                rows.Clear();
+                columns.Clear();
+            }
+        }
+
+        foreach (int result in results)
+        {
+            Console.WriteLine($"result {result}");
+        }
+        return results.Sum();
+    }
+
+    private static int HasMatch2(string[] lines)
+    {
+        int offset = 1;
+        while (offset < lines.Length)
+        {
+            int upper = offset;
+            int smudges = 0;
+            bool isMatch = true;
+            for (int lower = offset - 1; lower >= 0; lower--)
+            {
+                if (upper == lines.Length)
+                {
+                    if (isMatch)
+                    {
+                        return offset;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                smudges += CountSmudges(lines[lower], lines[upper]);
+                if (smudges > 1)
+                {
+                    isMatch = false;
+                    break;
+                }
+                else
+                {
+                    upper++;
+                }
+            }
+            if (isMatch && smudges == 1)
+            {
+                return offset;
+            }
+            else
+            {
+                offset++;
+            }
+        }
         return 0;
+    }
+
+    private static int CountSmudges(string first, string second)
+    {
+        int smudges = 0;
+        for (int i = 0; i < first.Length; i++)
+        {
+            if (first[i] != second[i])
+            {
+                smudges++;
+            }
+        }
+        return smudges;
     }
 
     public static void PartOneTest()
@@ -141,8 +237,8 @@ class Program
     static void Main()
     {
         // Day13.PartOneTest();
-        Day13.PartOne();
+        // Day13.PartOne();
         // Day13.PartTwoTest();
-        // Day13.PartTwo();
+        Day13.PartTwo();
     }
 }

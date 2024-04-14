@@ -9,7 +9,7 @@ public class Day10
     {
         string s;
         int boardWidth = 0;
-        int i = 0;
+        int boardIndex = 0;
         int startPosition = 0;
         int stepCount = 0;
         Dictionary<int, char> board = new Dictionary<int, char>();
@@ -20,9 +20,9 @@ public class Day10
             {
                 if (c == 'S')
                 {
-                    startPosition = i;
+                    startPosition = boardIndex;
                 }
-                board.Add(i++, c);
+                board.Add(boardIndex++, c);
             }
         }
         Direction[] validFirstDirections = GetValidFirstDirections(startPosition, boardWidth);
@@ -62,6 +62,11 @@ public class Day10
 
     public static long PartTwoSolution(StreamReader sr)
     {
+        string s;
+        while ((s = sr.ReadLine()) != null)
+        {
+            Console.WriteLine(s);
+        }
         return 0;
     }
 
@@ -195,7 +200,7 @@ public class Day10
 
     public static void PartTwoTest()
     {
-        StreamReader sr = GetInput("test-input.txt");
+        StreamReader sr = GetInput("test-input2.txt");
         Console.WriteLine($"Part Two Test: {PartTwoSolution(sr)}");
     }
 
@@ -224,9 +229,9 @@ class Program
 {
     static void Main()
     {
-        Day10.PartOneTest();
-        Day10.PartOne();
-        // Day10.PartTwoTest();
+        // Day10.PartOneTest();
+        // Day10.PartOne();
+        Day10.PartTwoTest();
         // Day10.PartTwo();
     }
 }

@@ -16,20 +16,7 @@ public class Day12
             string line = s.Split(' ')[0];
             foreach (char c in line)
             {
-                switch (c)
-                {
-                    case '?':
-                        springs.Add(SpringState.Unknown);
-                        break;
-                    case '#':
-                        springs.Add(SpringState.DamagedImmutable);
-                        break;
-                    case '.':
-                        springs.Add(SpringState.IntactImmutable);
-                        break;
-                    default:
-                        throw new Exception("Invalid input");
-                }
+                springs.Add(FromChar(c));
             }
             string[] sDamages = s.Split(' ')[1].Split(',');
             int[] damages = new int[sDamages.Length];
@@ -44,6 +31,48 @@ public class Day12
         return result;
     }
 
+    public static long PartTwoSolution(StreamReader sr)
+    {
+        string s;
+        int result = 0;
+        while ((s = sr.ReadLine()) != null)
+        {
+            int count = 0;
+            List<SpringState> springs = new List<SpringState>();
+            string line = s.Split(' ')[0];
+            foreach (char c in line)
+            {
+                springs.Add(FromChar(c));
+            }
+            string[] sDamages = s.Split(' ')[1].Split(',');
+            int[] damages = new int[sDamages.Length];
+            for (int i = 0; i < sDamages.Length; i++)
+            {
+                damages[i] = (int.Parse(sDamages[i]));
+            }
+            SpringState[] reference = springs.ToArray();
+            for (int i = 0; i < 4; i++)
+            {
+                springs.Add(SpringState.Unknown);
+                for (int j = 0; j < reference.Length; j++)
+                {
+                    springs.Add(reference[j]);
+                }
+            }
+            int[] newDamages = new int[damages.Length * 5];
+            for (int i = 0; i < 5 * damages.Length; i++)
+            {
+                newDamages[i] = damages[i % damages.Length];
+            }
+
+            PrintSpringState(springs.ToArray());
+            Backtrack(springs.ToArray(), newDamages, ref count);
+            Console.WriteLine($"Count: {count}");
+            result += count;
+        }
+        return result;
+    }
+
     enum SpringState
     {
         Unknown,
@@ -51,6 +80,40 @@ public class Day12
         Intact,
         DamagedImmutable,
         IntactImmutable
+    }
+
+    static SpringState FromChar(char c)
+    {
+        switch (c)
+        {
+            case '?':
+                return SpringState.Unknown;
+            case '#':
+                return SpringState.DamagedImmutable;
+            case '.':
+                return SpringState.IntactImmutable;
+            default:
+                throw new Exception("Invalid input");
+        }
+    }
+
+    static string ToString(SpringState P)
+    {
+        switch (P)
+        {
+            case SpringState.Unknown:
+                return "?";
+            case SpringState.Damaged:
+                return "#";
+            case SpringState.DamagedImmutable:
+                return "#";
+            case SpringState.Intact:
+                return ".";
+            case SpringState.IntactImmutable:
+                return ".";
+            default:
+                throw new Exception("Invalid state");
+        }
     }
 
     static void PrintSpringState(SpringState[] P)
@@ -89,9 +152,22 @@ public class Day12
 
     static bool Reject(SpringState[] P, int[] c)
     {
+        int totalDamaged = c.Sum();
+        int totalUnknown = P.Count(s => s == SpringState.Unknown);
+        int totalDamagedSet = P.Count(s => s == SpringState.Damaged || s == SpringState.DamagedImmutable);
+        if (totalDamagedSet > totalDamaged)
+        {
+            return true;
+        }
+        if (totalDamagedSet + totalUnknown < totalDamaged)
+        {
+            return true;
+        }
+
         int damagedCount = 0;
         int unknownCount = 0;
         int cIdx = 0;
+
         foreach (SpringState s in P)
         {
             if (s == SpringState.DamagedImmutable || s == SpringState.Damaged)
@@ -226,30 +302,6 @@ public class Day12
         return null;
     }
 
-    static string ToString(SpringState P)
-    {
-        switch (P)
-        {
-            case SpringState.Unknown:
-                return "?";
-            case SpringState.Damaged:
-                return "#";
-            case SpringState.DamagedImmutable:
-                return "#";
-            case SpringState.Intact:
-                return ".";
-            case SpringState.IntactImmutable:
-                return ".";
-            default:
-                throw new Exception("Invalid state");
-        }
-    }
-
-    public static long PartTwoSolution(StreamReader sr)
-    {
-        return 0;
-    }
-
     public static void PartOneTest()
     {
         StreamReader sr = GetInput("test-input2.txt");
@@ -264,7 +316,7 @@ public class Day12
 
     public static void PartTwoTest()
     {
-        StreamReader sr = GetInput("test-input.txt");
+        StreamReader sr = GetInput("test-input2.txt");
         Console.WriteLine($"Part Two Test: {PartTwoSolution(sr)}");
     }
 
@@ -294,9 +346,9 @@ class Program
 {
     static void Main()
     {
-        Day12.PartOneTest();
-        Day12.PartOne();
+        // Day12.PartOneTest();
+        // Day12.PartOne();
         // Day12.PartTwoTest();
-        // Day12.PartTwo();
+        Day12.PartTwo();
     }
 }
