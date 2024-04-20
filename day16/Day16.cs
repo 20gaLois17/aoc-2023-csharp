@@ -15,7 +15,7 @@ public class Day16
             grid._cols = s.Length;
             for (int colidx = 0; colidx < s.Length; colidx++)
             {
-                Cell cell = new Cell(CellTypeFromChar(s[colidx]));
+                Cell cell = new Cell(s[colidx]);
                 grid._cells.Add((rowidx, colidx), cell);
             }
             rowidx++;
@@ -34,6 +34,7 @@ public class Day16
             Console.ReadLine();
             Console.Clear();
             grid.PrintGrid(true);
+            Console.WriteLine();
             Console.WriteLine($"Iteration: {i}");
             Console.WriteLine($"BeamCount: {grid._beams.Count}");
         }
@@ -52,7 +53,7 @@ public class Day16
             grid._cols = s.Length;
             for (int colidx = 0; colidx < s.Length; colidx++)
             {
-                Cell cell = new Cell(CellTypeFromChar(s[colidx]));
+                Cell cell = new Cell((s[colidx]));
                 grid._cells.Add((rowidx, colidx), cell);
             }
             rowidx++;
@@ -73,9 +74,9 @@ public class Day16
                         for (int i = 0; i < 800; i++)
                         {
                             grid.NextTick();
-                            // grid.PrintGrid(true);
-                            // Console.ReadLine();
-                            // Console.Clear();
+                            grid.PrintGrid(true);
+                            Console.ReadLine();
+                            Console.Clear();
                         }
                         counts.Add(grid.GetCountEnergized());
                         grid.ResetCells();
@@ -107,7 +108,7 @@ public class Day16
                     }
                     else
                     {
-                        Console.Write(CellTypeToChar(_cells[(i, k)]._type));
+                        Console.Write((_cells[(i, k)]));
                     }
                 }
                 Console.WriteLine();
@@ -166,6 +167,7 @@ public class Day16
                             case Direction.Up:
                                 beam.SetDirection(Direction.Right);
                                 break;
+
                             case Direction.Down:
                                 beam.SetDirection(Direction.Left);
                                 break;
@@ -186,6 +188,7 @@ public class Day16
                             case Direction.Up:
                                 beam.SetDirection(Direction.Left);
                                 break;
+
                             case Direction.Down:
                                 beam.SetDirection(Direction.Right);
                                 break;
@@ -328,14 +331,51 @@ public class Day16
         public CellType _type;
         public bool energized = false;
 
-        public Cell(CellType type)
-        {
-            _type = type;
-        }
-
         public void Energize()
         {
             energized = true;
+        }
+
+        public Cell(char c)
+        {
+            switch (c)
+            {
+                case '/':
+                    _type = CellType.MIRROR_TR;
+                    break;
+                case '\\':
+                    _type = CellType.MIRROR_BR;
+                    break;
+                case '-':
+                    _type = CellType.SPLITTER_H;
+                    break;
+                case '|':
+                    _type = CellType.SPLITTER_V;
+                    break;
+                case '.':
+                    _type = CellType.EMPTY;
+                    break;
+                default:
+                    throw new Exception($"Invalid cell: {c}");
+            }
+        }
+        public override string ToString()
+        {
+            switch (_type)
+            {
+                case CellType.MIRROR_TR:
+                    return "/";
+                case CellType.MIRROR_BR:
+                    return "\\";
+                case CellType.SPLITTER_H:
+                    return "-";
+                case CellType.SPLITTER_V:
+                    return "|";
+                case CellType.EMPTY:
+                    return ".";
+                default:
+                    throw new Exception($"Invalid cell type: {_type}");
+            }
         }
     }
 
@@ -346,26 +386,6 @@ public class Day16
         SPLITTER_H,  // '-'
         SPLITTER_V,  // '|'
         EMPTY,       // '.'
-    }
-
-    static char CellTypeToChar(CellType cell)
-    {
-        switch (cell)
-        {
-            case CellType.MIRROR_TR:
-                return '/';
-            case CellType.MIRROR_BR:
-                return '\\';
-            case CellType.SPLITTER_H:
-                return '-';
-            case CellType.SPLITTER_V:
-                return '|';
-            case CellType.EMPTY:
-                return '.';
-            default:
-                throw new Exception($"Invalid cell type: {cell}");
-        }
-
     }
 
     static CellType CellTypeFromChar(char c)
@@ -435,9 +455,9 @@ class Program
 {
     static void Main()
     {
-        // Day16.PartOneTest();
+        Day16.PartOneTest();
         // Day16.PartOne();
         // Day16.PartTwoTest();
-        Day16.PartTwo();
+        // Day16.PartTwo();
     }
 }
